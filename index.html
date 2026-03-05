@@ -745,16 +745,28 @@ async function saveProject() {
     }
     
     try {
-        toast('Sauvegarde en cours...', 'info');
-        
         let pdf_data = null;
         let pdf_name = null;
         
         const pdfFile = document.getElementById('pjPDF')?.files?.[0];
         if (pdfFile) {
+            // Vérifier la taille
+            const sizeMB = pdfFile.size / (1024 * 1024);
+            if (sizeMB > 50) {
+                toast(`Fichier trop gros (${sizeMB.toFixed(1)} MB, max 50 MB)`, 'err');
+                return;
+            }
+            
+            toast(`Conversion PDF en cours... (${sizeMB.toFixed(1)} MB)`, 'info');
+            console.log(`📄 Converting PDF ${pdfFile.name} (${sizeMB.toFixed(1)} MB)`);
+            
             pdf_data = await fileToBase64(pdfFile);
             pdf_name = pdfFile.name;
+            
+            console.log(`✅ PDF converti en Base64 (${(pdf_data.length / 1024 / 1024).toFixed(1)} MB)`);
         }
+        
+        toast('Sauvegarde en cours...', 'info');
         
         const data = {
             name: name,
@@ -764,18 +776,24 @@ async function saveProject() {
             pdf_name: pdf_name
         };
         
-        await sb.post('projects', data);
+        console.log('Sending data to Supabase...', { name, pdf_name, pdf_data_size: pdf_data ? pdf_data.length : 0 });
+        
+        const result = await sb.post('projects', data);
+        console.log('✅ Project saved:', result);
+        
         toast(`Projet "${name}" créé ✓`, 'ok');
         
         document.getElementById('pjName').value = '';
         document.getElementById('pjDesc').value = '';
         document.getElementById('pjPDF').value = '';
         
-        goTo('projects');
-        renderProjects();
+        setTimeout(() => {
+            goTo('projects');
+            renderProjects();
+        }, 500);
         
     } catch(e) {
-        console.error('Erreur création projet:', e);
+        console.error('❌ Erreur création projet:', e);
         toast(`Erreur: ${e.message}`, 'err');
     }
 }
