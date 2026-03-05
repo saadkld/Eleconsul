@@ -296,7 +296,9 @@
             <div class="nav-dd">
                 <button class="nav-btn">📁 Projets ▾</button>
                 <div class="nav-dd-content">
-                    <a href="#" onclick="goTo('projects');return false;">📁 Projets</a>
+                    <a href="#" onclick="goTo('projects','etudes');return false;">📐 Bureau d'Étude</a>
+                    <a href="#" onclick="goTo('projects','installations');return false;">🔧 Installations</a>
+                    <a href="#" onclick="goTo('projectsList');return false;">📕 Projets avec PDFs</a>
                 </div>
             </div>
             <div class="nav-dd">
@@ -320,7 +322,9 @@
         <div class="d-section">Navigation</div>
         <button class="d-item" onclick="goTo('dashboard');closeDrawer()">🏠 Dashboard</button>
         <div class="d-section">Projets</div>
-        <button class="d-item" onclick="goTo('projects');closeDrawer()">📁 Projets</button>
+        <button class="d-item" onclick="goTo('projects','etudes');closeDrawer()">📐 Bureau d'Étude</button>
+        <button class="d-item" onclick="goTo('projects','installations');closeDrawer()">🔧 Installations</button>
+        <button class="d-item" onclick="goTo('projectsList');closeDrawer()">📕 Projets avec PDFs</button>
         <div class="d-section">Stock</div>
         <button class="d-item" onclick="goTo('stock','products');closeDrawer()">📦 Produits</button>
         <button class="d-item" onclick="goTo('stock','movements');closeDrawer()">🔄 Mouvements</button>
@@ -400,10 +404,27 @@
 
             <!-- PROJECTS -->
             <div id="viewProjects" class="view">
+                <div class="tabs">
+                    <button class="tab-btn active" id="tbEtudes" onclick="switchProjTab('etudes',this)">📐 Bureau d'Étude</button>
+                    <button class="tab-btn" id="tbInstalls" onclick="switchProjTab('installations',this)">🔧 Installations</button>
+                </div>
+                <div id="pEtudes" class="tab-panel active">
+                    <div class="sh"><h2>Bureau d'Étude</h2><button class="btn btn-primary" onclick="goTo('etudeEdit')">➕ Nouveau</button></div>
+                    <div class="sbar"><input class="f-input" id="etudeSearch" placeholder="Rechercher un site…" oninput="renderEtudes()"></div>
+                    <div id="etudesList"></div>
+                </div>
+                <div id="pInstalls" class="tab-panel">
+                    <div class="sh"><h2>Installations</h2><button class="btn btn-primary" onclick="goTo('installationEdit')">➕ Nouveau</button></div>
+                    <div id="installsList"></div>
+                </div>
+            </div>
+
+            <!-- PROJETS AVEC PDFs -->
+            <div id="viewProjectsList" class="view">
                 <div class="ca">
                     <div class="sh">
                         <div>
-                            <h1>Projets</h1>
+                            <h1>📁 Projets avec PDFs</h1>
                             <p style="color:var(--g500);font-size:.9em;margin:8px 0 0;">Gérez vos projets et PDFs</p>
                         </div>
                         <button onclick="goTo('projectCreate')" class="btn btn-primary">➕ Nouveau Projet</button>
@@ -448,7 +469,7 @@
                             </div>
                             
                             <div style="display:flex;gap:12px;">
-                                <button onclick="saveProject()" class="btn btn-primary" style="flex:1;">✓ Créer Projet</button>
+                                <button onclick="saveProjectWithPDF()" class="btn btn-primary" style="flex:1;">✓ Créer Projet</button>
                                 <button onclick="goTo('projects')" class="btn btn-outline" style="flex:1;">Annuler</button>
                             </div>
                         </div>
@@ -674,24 +695,21 @@ const sb = {
 
     async upload(bucket, path, file) {
         try {
-            console.log(`🔧 Uploading to ${bucket}/${path}`);
-            
-            // Utiliser PUT au lieu de POST pour mieux fonctionner avec les policies
             const url = `${SB_URL}/storage/v1/object/${bucket}/${path}`;
+            console.log(`🔧 Direct upload to: ${url}`);
             
             const response = await fetch(url, {
-                method: 'PUT',  // ← CHANGÉ DE POST À PUT
+                method: 'POST',
                 headers: {
-                    'authorization': `Bearer ${SB_KEY}`
-                    // NE PAS ajouter d'autres headers, le navigateur gère Content-Type
+                    'authorization': `Bearer ${SB_KEY}`,
+                    'x-upsert': 'true'
                 },
                 body: file
             });
             
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Upload response:', response.status, errorText);
-                throw new Error(`Upload failed: ${response.status} ${errorText}`);
+                const error = await response.text();
+                throw new Error(`Upload failed: ${response.status} ${error}`);
             }
             
             const publicUrl = `${SB_URL}/storage/v1/object/public/${bucket}/${path}`;
@@ -735,7 +753,7 @@ function base64ToBlob(base64, mimeType = 'application/pdf') {
     return new Blob([byteArray], { type: mimeType });
 }
 
-async function saveProject() {
+async function saveProjectWithPDF() {
     const name = document.getElementById('pjName')?.value;
     const desc = document.getElementById('pjDesc')?.value;
     
@@ -750,7 +768,6 @@ async function saveProject() {
         
         const pdfFile = document.getElementById('pjPDF')?.files?.[0];
         if (pdfFile) {
-            // Vérifier la taille
             const sizeMB = pdfFile.size / (1024 * 1024);
             if (sizeMB > 50) {
                 toast(`Fichier trop gros (${sizeMB.toFixed(1)} MB, max 50 MB)`, 'err');
@@ -788,8 +805,8 @@ async function saveProject() {
         document.getElementById('pjPDF').value = '';
         
         setTimeout(() => {
-            goTo('projects');
-            renderProjects();
+            goTo('projectsList');
+            renderProjectsList();
         }, 500);
         
     } catch(e) {
@@ -798,9 +815,9 @@ async function saveProject() {
     }
 }
 
-async function renderProjects() {
+async function renderProjectsList() {
     try {
-        const projects = await sb.get('projects', {});
+        const projects = await sb.get('projects', null);
         const container = document.getElementById('projectsList');
         
         if (!projects || projects.length === 0) {
@@ -825,7 +842,7 @@ async function renderProjects() {
                         ` : '<em style="color:var(--g500);">Pas de PDF</em>'}
                     </div>
                     <div style="display:flex;gap:8px;flex-shrink:0;">
-                        <button onclick="editProject(${p.id})" class="btn btn-sm btn-outline">✏️</button>
+                        <button onclick="editProjectPDF(${p.id})" class="btn btn-sm btn-outline">✏️</button>
                         <button onclick="deleteProjectConfirm(${p.id})" class="btn btn-sm btn-danger-outline">🗑️</button>
                     </div>
                 </div>
@@ -839,7 +856,7 @@ async function renderProjects() {
 }
 
 function downloadProjectPDF(projectId, filename) {
-    sb.get('projects', { id: 'eq.' + projectId }).then(projects => {
+    sb.get('projects', 'id=eq.' + projectId).then(projects => {
         if (!projects || projects.length === 0) {
             toast('Projet non trouvé', 'err');
             return;
@@ -868,22 +885,22 @@ function downloadProjectPDF(projectId, filename) {
 
 function deleteProjectConfirm(projectId) {
     if (confirm('Supprimer ce projet ?')) {
-        deleteProject(projectId);
+        deleteProjectPDF(projectId);
     }
 }
 
-async function deleteProject(projectId) {
+async function deleteProjectPDF(projectId) {
     try {
-        await sb.delete('projects', { id: 'eq.' + projectId });
+        await sb.delete('projects', 'id=eq.' + projectId);
         toast('Projet supprimé ✓', 'ok');
-        renderProjects();
+        renderProjectsList();
     } catch(e) {
         console.error('Erreur suppression:', e);
         toast('Erreur suppression', 'err');
     }
 }
 
-function editProject(projectId) {
+function editProjectPDF(projectId) {
     toast('Édition bientôt disponible', 'info');
 }
 
@@ -992,7 +1009,7 @@ function showMain() {
 // ═══════════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════════
-const allViews = ['Dashboard','Stock','Projects','ProjectCreate','Tickets','Admin','ProductEdit','EtudeEdit','InstallationEdit'];
+const allViews = ['Dashboard','Stock','Projects','ProjectsList','ProjectCreate','Tickets','Admin','ProductEdit','EtudeEdit','InstallationEdit'];
 
 function showView(name) {
     allViews.forEach(v => { const el = document.getElementById('view'+v); if (el) el.classList.remove('active'); });
@@ -1006,7 +1023,8 @@ function goTo(section, sub) {
     _curSub = sub || null;
     if (section === 'dashboard')         { showView('Dashboard');        renderDashboard(); }
     else if (section === 'stock')        { showView('Stock');            sub === 'movements' ? switchStockTab('movements', document.getElementById('tbMovements')) : switchStockTab('products', document.getElementById('tbProducts')); }
-    else if (section === 'projects')     { showView('Projects');         renderProjects(); }
+    else if (section === 'projects')     { showView('Projects');         sub === 'installations' ? switchProjTab('installations', document.getElementById('tbInstalls')) : switchProjTab('etudes', document.getElementById('tbEtudes')); }
+    else if (section === 'projectsList') { showView('ProjectsList');     renderProjectsList(); }
     else if (section === 'projectCreate'){ showView('ProjectCreate'); }
     else if (section === 'tickets')      { showView('Tickets');          renderTickets(); }
     else if (section === 'admin')        { showView('Admin'); }
@@ -1260,16 +1278,12 @@ async function uploadPendingFiles(type, linkedTo, linkedId) {
     
     for (const f of files) {
         try {
-            // Simplifier le nom du fichier en enlevant les caractères spéciaux
-            const safeName = f.name.replace(/[^a-zA-Z0-9._-]/g,'_');
-            const timestamp = Date.now();
-            // IMPORTANT: Ne pas utiliser de slashes dans le chemin - ça casse les policies Supabase !
-            const path = `${timestamp}_${safeName}`;
+            const path = `${linkedTo}/${linkedId}/${Date.now()}_${f.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
             console.log(`📤 Upload: ${f.name} -> ${path}`);
             
             // Upload SEULEMENT au Storage, pas de DB
             const url = await sb.upload('documents', path, f);
-            console.log(`✅ ${f.name} uploadé au Storage: ${url}`);
+            console.log(`✅ ${f.name} uploadé au Storage`);
             toast(`${f.name} uploadé ✓`,'ok');
             
         } catch(e) { 
