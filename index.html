@@ -424,71 +424,18 @@
             <!-- ADMIN -->
             <div id="viewAdmin" class="view">
                 <div class="sh"><h2>⚙️ Administration</h2></div>
-                <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:24px;">
-                    <button class="btn btn-primary" onclick="goTo('userCreate')">👤 Créer un compte</button>
-                    <button class="btn btn-outline" onclick="goTo('userManage')">👥 Gestion des utilisateurs</button>
-                </div>
-            </div>
-
-            <!-- MANAGE USERS -->
-            <div id="viewUserManage" class="view">
-                <div class="sh">
-                    <div>
-                        <h2>👥 Gestion des utilisateurs</h2>
-                        <p style="color:var(--g600);font-size:.9em;margin-top:4px;">Accès réservé aux administrateurs</p>
+                <div class="ep-card" style="max-width:560px;">
+                    <h3 style="font-size:1.05em;font-weight:700;margin-bottom:20px;">👤 Créer un compte</h3>
+                    <div class="f-group"><label class="f-label">Nom complet</label><input class="f-input" id="naName" placeholder="Nom complet"></div>
+                    <div class="f-row">
+                        <div class="f-group" style="margin:0;"><label class="f-label">Email</label><input class="f-input" type="email" id="naEmail" placeholder="email@exemple.com"></div>
+                        <div class="f-group" style="margin:0;"><label class="f-label">Nom d'utilisateur</label><input class="f-input" id="naUser" placeholder="username"></div>
                     </div>
-                    <button class="btn btn-primary" onclick="goTo('userCreate')">➕ Nouvel utilisateur</button>
-                </div>
-                <div class="t-wrap">
-                    <table class="dt">
-                        <thead>
-                            <tr>
-                                <th>Nom d'utilisateur</th>
-                                <th>Email</th>
-                                <th>Rôle</th>
-                                <th>Email confirmé</th>
-                                <th class="c">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="usersTbody"></tbody>
-                    </table>
-                </div>
-                <div id="usersList" style="display:none;"></div>
-            </div>
-
-            <!-- CREATE/EDIT USER -->
-            <div id="viewUserCreate" class="view">
-                <div class="ep">
-                    <div class="ep-hd"><button class="btn btn-secondary btn-sm" onclick="goBack()">← Retour</button><h2 id="userCreateTitle">Créer un compte</h2></div>
-                    <div class="ep-card" style="max-width:560px;">
-                        <div class="f-group"><label class="f-label">Nom complet</label><input class="f-input" id="naName" placeholder="Nom complet"></div>
-                        <div class="f-row">
-                            <div class="f-group" style="margin:0;"><label class="f-label">Email</label><input class="f-input" type="email" id="naEmail" placeholder="email@exemple.com"></div>
-                            <div class="f-group" style="margin:0;"><label class="f-label">Nom d'utilisateur</label><input class="f-input" id="naUser" placeholder="username"></div>
-                        </div>
-                        <div class="f-row">
-                            <div class="f-group" style="margin:0;"><label class="f-label">Mot de passe</label><input class="f-input" type="password" id="naPass" placeholder="••••••••"></div>
-                            <div class="f-group" style="margin:0;"><label class="f-label">Rôle</label><select class="f-select" id="naRole"><option value="">-- Sélectionner --</option><option value="utilisateur">Utilisateur</option><option value="admin">Admin</option></select></div>
-                        </div>
-                        <button class="btn btn-success" onclick="createAccount()" style="width:100%;justify-content:center;padding:13px;">➕ Créer le compte</button>
+                    <div class="f-row">
+                        <div class="f-group" style="margin:0;"><label class="f-label">Mot de passe</label><input class="f-input" type="password" id="naPass" placeholder="••••••••"></div>
+                        <div class="f-group" style="margin:0;"><label class="f-label">Rôle</label><select class="f-select" id="naRole"><option value="">-- Sélectionner --</option><option value="utilisateur">Utilisateur</option><option value="admin">Admin</option></select></div>
                     </div>
-                </div>
-            </div>
-
-            <!-- EDIT USER -->
-            <div id="viewUserEdit" class="view">
-                <div class="ep">
-                    <div class="ep-hd"><button class="btn btn-secondary btn-sm" onclick="goBack()">← Retour</button><h2>✏️ Modifier l'utilisateur</h2></div>
-                    <div class="ep-card" style="max-width:560px;">
-                        <div class="f-group"><label class="f-label">Nom complet</label><input class="f-input" id="euName" placeholder="Nom complet"></div>
-                        <div class="f-row">
-                            <div class="f-group" style="margin:0;"><label class="f-label">Email</label><input class="f-input" type="email" id="euEmail" placeholder="email@exemple.com"></div>
-                            <div class="f-group" style="margin:0;"><label class="f-label">Nom d'utilisateur (non modifiable)</label><input class="f-input" id="euUser" placeholder="username" disabled style="background:var(--g100);color:var(--g600);cursor:not-allowed;"></div>
-                        </div>
-                        <div class="f-group"><label class="f-label">Rôle</label><select class="f-select" id="euRole"><option value="utilisateur">Utilisateur</option><option value="admin">Admin</option></select></div>
-                        <div class="f-group"><label class="f-label">Nouveau mot de passe (laisser vide pour ne pas changer)</label><input class="f-input" type="password" id="euPass" placeholder="••••••••"></div>
-                        <button class="btn btn-success" onclick="saveUserChanges()" style="width:100%;justify-content:center;padding:13px;">💾 Enregistrer les modifications</button>
-                    </div>
+                    <button class="btn btn-success" onclick="createAccount()" style="width:100%;justify-content:center;padding:13px;">➕ Créer le compte</button>
                 </div>
             </div>
 
@@ -663,48 +610,33 @@ const sb = {
         if (error) throw new Error(error.message);
     },
 
-    async patchByUsername(table, username, data) {
-        const { error } = await supabaseClient.from(table).update(data).eq('username', username);
-        if (error) throw new Error(error.message);
-    },
-
     async delete(table, query) {
-        // Support pour id=eq.123
-        let idMatch = query.match(/id=eq\.(\d+)/);
-        if (idMatch) {
-            const { error } = await supabaseClient.from(table).delete().eq('id', parseInt(idMatch[1]));
-            if (error) throw new Error(error.message);
-            return;
-        }
-        
-        // Support pour username=eq.xxx
-        let usernameMatch = query.match(/username=eq\.(.+?)(&|$)/);
-        if (usernameMatch) {
-            const { error } = await supabaseClient.from(table).delete().eq('username', decodeURIComponent(usernameMatch[1]));
-            if (error) throw new Error(error.message);
-            return;
-        }
-        
-        throw new Error('Invalid delete query');
+        const match = query.match(/id=eq\.(\d+)/);
+        if (!match) throw new Error('Invalid delete query');
+        const { error } = await supabaseClient.from(table).delete().eq('id', parseInt(match[1]));
+        if (error) throw new Error(error.message);
     },
 
     async upload(bucket, path, file) {
         try {
+            console.log(`🔧 Uploading to ${bucket}/${path}`);
+            
+            // Utiliser PUT au lieu de POST pour mieux fonctionner avec les policies
             const url = `${SB_URL}/storage/v1/object/${bucket}/${path}`;
-            console.log(`🔧 Direct upload to: ${url}`);
             
             const response = await fetch(url, {
-                method: 'POST',
+                method: 'PUT',  // ← CHANGÉ DE POST À PUT
                 headers: {
-                    'authorization': `Bearer ${SB_KEY}`,
-                    'x-upsert': 'true'
+                    'authorization': `Bearer ${SB_KEY}`
+                    // NE PAS ajouter d'autres headers, le navigateur gère Content-Type
                 },
                 body: file
             });
             
             if (!response.ok) {
-                const error = await response.text();
-                throw new Error(`Upload failed: ${response.status} ${error}`);
+                const errorText = await response.text();
+                console.error('Upload response:', response.status, errorText);
+                throw new Error(`Upload failed: ${response.status} ${errorText}`);
             }
             
             const publicUrl = `${SB_URL}/storage/v1/object/public/${bucket}/${path}`;
@@ -777,17 +709,6 @@ function closeDrawer() {
 }
 
 // ═══════════════════════════════════════════════════
-// PASSWORD HASHING (SHA-256)
-// ═══════════════════════════════════════════════════
-async function hashPassword(password) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-// ═══════════════════════════════════════════════════
 // AUTH
 // ═══════════════════════════════════════════════════
 async function checkLogin() {
@@ -802,8 +723,7 @@ async function login() {
     const err = document.getElementById('lgErr');
     if (!u || !p) { err.textContent = 'Veuillez saisir vos identifiants'; return; }
     try {
-        const hashedPass = await hashPassword(p);
-        const rows = await sb.get('users', `username=eq.${encodeURIComponent(u)}&password=eq.${encodeURIComponent(hashedPass)}&select=*`);
+        const rows = await sb.get('users', `username=eq.${encodeURIComponent(u)}&password=eq.${encodeURIComponent(p)}&select=*`);
         if (!rows.length) { err.textContent = 'Identifiants incorrects'; return; }
         currentUser = rows[0];
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -840,7 +760,7 @@ function showMain() {
 // ═══════════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════════
-const allViews = ['Dashboard','Stock','Projects','Tickets','Admin','UserManage','UserCreate','UserEdit','ProductEdit','EtudeEdit','InstallationEdit'];
+const allViews = ['Dashboard','Stock','Projects','Tickets','Admin','ProductEdit','EtudeEdit','InstallationEdit'];
 
 function showView(name) {
     allViews.forEach(v => { const el = document.getElementById('view'+v); if (el) el.classList.remove('active'); });
@@ -856,28 +776,14 @@ function goTo(section, sub) {
     else if (section === 'stock')        { showView('Stock');            sub === 'movements' ? switchStockTab('movements', document.getElementById('tbMovements')) : switchStockTab('products', document.getElementById('tbProducts')); }
     else if (section === 'projects')     { showView('Projects');         sub === 'installations' ? switchProjTab('installations', document.getElementById('tbInstalls')) : switchProjTab('etudes', document.getElementById('tbEtudes')); }
     else if (section === 'tickets')      { showView('Tickets');          renderTickets(); }
-    else if (section === 'admin')        { showView('UserManage');       renderUsers(); }
-    else if (section === 'userManage')   { showView('UserManage');       renderUsers(); }
-    else if (section === 'userCreate')   { showView('UserCreate');       prepUserCreate(); }
-    else if (section === 'userEdit')     { showView('UserEdit');         prepUserEdit(sub); }
+    else if (section === 'admin')        { showView('Admin'); }
     else if (section === 'productEdit')  { _editProdId = sub||null;    prepProd();    showView('ProductEdit'); }
     else if (section === 'etudeEdit')    { _editEtudeId = sub||null;   prepEtude();   showView('EtudeEdit'); }
     else if (section === 'installationEdit') { _editInstallId = sub||null; prepInstall(); showView('InstallationEdit'); }
     window.scrollTo(0,0);
 }
 
-function goBack() { 
-    const mapping = {
-        'usermanage': 'userManage',
-        'usercreate': 'userManage',
-        'useredit': 'userManage',
-        'productEdit': 'stock',
-        'etudeEdit': 'projects',
-        'installationEdit': 'projects'
-    };
-    const target = mapping[_prevView.toLowerCase()] || 'dashboard';
-    goTo(target, _curSub);
-}
+function goBack() { goTo(_prevView.toLowerCase().replace('edit','').replace('productEdit','stock').replace('etudeedit','projects').replace('installationedit','projects') || 'dashboard', _curSub); }
 
 function switchStockTab(name, el) {
     ['Products','Movements'].forEach(p => document.getElementById('p'+p).classList.remove('active'));
@@ -1501,124 +1407,12 @@ async function createAccount() {
     if (!name||!email||!user||!pass||!role) { toast('Veuillez remplir tous les champs','err'); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast('Email invalide','err'); return; }
     try {
-        const hashedPass = await hashPassword(pass);
-        await sb.post('users', { username: user, password: hashedPass, role, name, email });
+        await sb.post('users', { username: user, password: pass, role, name, email });
         toast(`Compte ${user} créé ✓`,'ok');
         ['naName','naEmail','naUser','naPass'].forEach(id => document.getElementById(id).value='');
         document.getElementById('naRole').value='';
         fillResponsables();
-        renderUsers();
-        if (document.getElementById('usersTbody')) goTo('userManage');
     } catch(e) { toast('Erreur: '+e.message,'err'); }
-}
-
-function prepUserCreate() {
-    document.getElementById('userCreateTitle').textContent = 'Créer un compte';
-    ['naName','naEmail','naUser','naPass'].forEach(id => document.getElementById(id).value='');
-    document.getElementById('naRole').value='';
-}
-
-async function renderUsers() {
-    if (!document.getElementById('usersTbody')) return;
-    try {
-        const users = await sb.get('users','select=*&order=username.asc');
-        const tbody = document.getElementById('usersTbody');
-        if (!users.length) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--g500);">Aucun utilisateur</td></tr>';
-            return;
-        }
-        tbody.innerHTML = users.map(u => `
-            <tr>
-                <td><strong>${u.username}</strong></td>
-                <td>${u.email||'—'}</td>
-                <td>
-                    <span class="badge ${u.role==='admin'?'bg-red':'bg-blue'}" style="display:inline-block;padding:4px 12px;border-radius:4px;font-size:.85em;font-weight:600;color:#fff;border:none;background:${u.role==='admin'?'var(--danger)':'var(--brand)'};">
-                        ${u.role.charAt(0).toUpperCase()+u.role.slice(1)}
-                    </span>
-                </td>
-                <td style="text-align:center;"><span style="color:var(--success);font-size:1.2em;">✓</span></td>
-                <td class="c">
-                    <button class="btn btn-secondary btn-sm" onclick="editUser('${u.username}')" style="margin-right:6px;">✏️ Modifier</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteUserConfirm('${u.username}','${u.username}')">🗑 Supprimer</button>
-                </td>
-            </tr>
-        `).join('');
-    } catch(e) {
-        const tbody = document.getElementById('usersTbody');
-        if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="color:var(--danger);text-align:center;padding:20px;">Erreur: ${e.message}</td></tr>`;
-    }
-}
-
-function editUser(username) {
-    goTo('userEdit', username);
-}
-
-async function prepUserEdit(username) {
-    if (!username) { toast('Utilisateur non trouvé','err'); goBack(); return; }
-    try {
-        const users = await sb.get('users', `username=eq.${encodeURIComponent(username)}&select=*`);
-        if (!users.length) { toast('Utilisateur non trouvé','err'); goBack(); return; }
-        const user = users[0];
-        document.getElementById('euName').value = user.name || '';
-        document.getElementById('euEmail').value = user.email || '';
-        document.getElementById('euUser').value = user.username;
-        document.getElementById('euRole').value = user.role || 'utilisateur';
-        document.getElementById('euPass').value = '';
-        window.currentEditingUser = user;
-    } catch(e) {
-        toast('Erreur: '+e.message,'err');
-        goBack();
-    }
-}
-
-async function saveUserChanges() {
-    if (currentUser.role !== 'admin') { toast('Admin seulement','err'); return; }
-    const user = window.currentEditingUser;
-    if (!user) { toast('Erreur: utilisateur non chargé','err'); return; }
-    
-    const name = document.getElementById('euName').value.trim();
-    const email = document.getElementById('euEmail').value.trim();
-    const role = document.getElementById('euRole').value;
-    const pass = document.getElementById('euPass').value;
-    
-    if (!name || !email || !role) { toast('Veuillez remplir tous les champs','err'); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast('Email invalide','err'); return; }
-    
-    try {
-        const updateData = { name, email, role };
-        
-        // Si un nouveau mot de passe est fourni, le hasher
-        if (pass) {
-            updateData.password = await hashPassword(pass);
-        }
-        
-        // Supabase utilise un filtre id, pas username pour update
-        // On doit modifier la fonction patch pour supporter username
-        await sb.patchByUsername('users', user.username, updateData);
-        toast(`Utilisateur "${user.username}" modifié ✓`,'ok');
-        renderUsers();
-        goBack();
-    } catch(e) {
-        toast('Erreur: '+e.message,'err');
-    }
-}
-
-async function deleteUserConfirm(username, displayName) {
-    if (currentUser.role !== 'admin') { toast('Admin seulement','err'); return; }
-    if (currentUser.username === username) { toast('Vous ne pouvez pas supprimer votre propre compte','err'); return; }
-    confirm(`Supprimer l'utilisateur "${displayName}" ?`, async () => {
-        await deleteUser(username);
-    });
-}
-
-async function deleteUser(username) {
-    try {
-        await sb.delete('users', `username=eq.${encodeURIComponent(username)}`);
-        toast(`Utilisateur "${username}" supprimé ✓`,'ok');
-        renderUsers();
-    } catch(e) {
-        toast('Erreur: '+e.message,'err');
-    }
 }
 
 async function fillResponsables() {
@@ -1629,9 +1423,6 @@ async function fillResponsables() {
     } catch(e) {}
 }
 
-// ═══════════════════════════════════════════════════
-// PASSWORD HASHING (SHA-256)
-// ═══════════════════════════════════════════════════
 // ═══════════════════════════════════════════════════
 // UTILS
 // ═══════════════════════════════════════════════════
