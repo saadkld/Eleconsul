@@ -1027,12 +1027,16 @@ async function uploadPendingFiles(type, linkedTo, linkedId) {
     
     for (const f of files) {
         try {
-            const path = `${linkedTo}/${linkedId}/${Date.now()}_${f.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+            // Simplifier le nom du fichier en enlevant les caractères spéciaux
+            const safeName = f.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+            const timestamp = Date.now();
+            // IMPORTANT: Ne pas utiliser de slashes dans le chemin - ça casse les policies Supabase !
+            const path = `${timestamp}_${safeName}`;
             console.log(`📤 Upload: ${f.name} -> ${path}`);
             
             // Upload SEULEMENT au Storage, pas de DB
             const url = await sb.upload('documents', path, f);
-            console.log(`✅ ${f.name} uploadé au Storage`);
+            console.log(`✅ ${f.name} uploadé au Storage: ${url}`);
             toast(`${f.name} uploadé ✓`,'ok');
             
         } catch(e) { 
